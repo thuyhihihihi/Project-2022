@@ -1,0 +1,6 @@
+# file nay quy dinh file nao se day len server
+/node_modules
+/vendor
+/.idea
+.idea/
+.env
