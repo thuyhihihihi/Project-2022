@@ -110,22 +110,24 @@ let createNewUser = (data) => {
             if (check === true) {
                 resolve({
                     errCode: 1,
-                    message: 'email da duoc su dung, thu cach khac'
+                    errMessage: 'email da duoc su dung, thu cach khac'
                 })
+            }else{
+                let hashPasswordBcrypt = await hashUserPassword(data.password);
+                await db.User.create({
+                    fullName: data.fullName,
+                    email: data.email,
+                    password: hashPasswordBcrypt,
+                    phonenumber: data.phonenumber,
+                    address: data.address,
+                    roleId: data.roleId,
+                })
+                resolve({
+                    errCode: 0,
+                    message: 'tao thanh cong'
+                });
             }
-            let hashPasswordBcrypt = await hashUserPassword(data.password);
-            await db.User.create({
-                fullName: data.fullName,
-                email: data.email,
-                password: hashPasswordBcrypt,
-                phonenumber: data.phonenumber,
-                address: data.address,
-                roleId: data.roleId,
-            })
-            resolve({
-                errCode: 0,
-                message: 'tao thanh cong'
-            });
+           
         } catch (e) {
             reject(e);
         }
