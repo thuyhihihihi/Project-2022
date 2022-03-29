@@ -8,6 +8,9 @@ module.exports = {
       password: '1122',//plan text 
       typeRole: 'ROLE',
       keyRole: 'A1',
+      address: 'vn',
+      phonenumber: '0123455',
+      positionId: 'bs',
       createdAt: new Date(),
       updatedAt: new Date()
     }]);

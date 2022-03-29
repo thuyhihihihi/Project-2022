@@ -64,6 +64,7 @@ let putEdit = async (req, res) => {
         dataDisplay: allUsers
     })
 }
+
 let Delete = async (req, res) => {
     let id = req.query.id;
     if (id) {

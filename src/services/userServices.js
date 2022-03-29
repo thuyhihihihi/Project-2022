@@ -25,7 +25,7 @@ let handleLogin = (email, password) => {
             let isExist = await checkEmail(email)
             if (isExist) {
                 let user = await db.User.findOne({
-                    attributes: ['email', 'roleId', 'password'],//ham nay de lay nhung mang can lay
+                    attributes: ['email', 'roleId', 'password', 'fullName'],//ham nay de lay nhung mang can lay
                     where: { email: email },
                     raw: true // hide password - bao mat tai khoan
                 });
@@ -112,7 +112,7 @@ let createNewUser = (data) => {
                     errCode: 1,
                     errMessage: 'email da duoc su dung, thu cach khac'
                 })
-            }else{
+            } else {
                 let hashPasswordBcrypt = await hashUserPassword(data.password);
                 await db.User.create({
                     fullName: data.fullName,
@@ -127,7 +127,7 @@ let createNewUser = (data) => {
                     message: 'tao thanh cong'
                 });
             }
-           
+
         } catch (e) {
             reject(e);
         }
@@ -139,7 +139,7 @@ let deleteUser = (userId) => {
         let FoundUser = await db.User.findOne({//findOne = chi tìm 1 bản ghi, nếu tìm thấy sẽ trả ra object
             //tương ứng role trong db
             where: { id: userId }//where: chọn hết tableUser, nơi id = idInput truyền vào
-            
+
         })
         if (!FoundUser) {
             resolve({
@@ -198,10 +198,36 @@ let updateUserData = (data) => {
         }
     })
 }
+
+let getAllCodeService = (typeInput) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!typeInput) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'missing required parameter!'
+                })
+            } else {
+                let res = {};
+                let allCode = await db.Codes.findAll({
+                    where: { type: typeInput }// tim tat ca va loc theo dieu kien where
+                });
+                res.errCode = 0;
+                res.data = allCode;
+                resolve(res);
+            }
+
+        } catch (e) {
+            reject(e);
+
+        }
+    })
+}
 module.exports = {
     handleLogin: handleLogin,
     getAllUser: getAllUser,
     createNewUser: createNewUser,
     deleteUser: deleteUser,
-    updateUserData: updateUserData
+    updateUserData: updateUserData,
+    getAllCodeService: getAllCodeService
 }
