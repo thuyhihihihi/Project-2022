@@ -4,7 +4,8 @@ import { route } from "express/lib/application";
 // import { route } from "express/lib/application";
 import homeController from '../controllers/homeController';
 let router = express.Router();
-import userController from "../controllers/userController"
+import userController from "../controllers/userController";
+import doctorController from "../controllers/doctorController"
 
 let initWebRoutes = (app) => {
     router.get('/', homeController.getHomePage);
@@ -21,7 +22,13 @@ let initWebRoutes = (app) => {
     router.post('/api/create-new-user', userController.handleCreateNewUser);
     router.put('/api/edit-user', userController.handleEditUser);
     router.delete('/api/delete-user', userController.handleDeleteUser);//restAPI
-    router.get('/code', userController.getAllCode);
+    router.get('/api/code', userController.getAllCode);
+
+    router.get('/api/load-doctor', doctorController.getLoadDoctorHome);
+    router.get('/api/get-all-doctor', doctorController.getAllDoctor);
+    router.post('/api/save-infor-doctor', doctorController.postInforDoctor);
+    router.get('/api/get-infor-doctor', doctorController.getInforDoctor);
+
     return app.use("/", router);
 }
 

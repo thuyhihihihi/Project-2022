@@ -62,15 +62,15 @@ let handleEditUser = async (req, res) => {
 
 let getAllCode = async (req, res) => {
     try {
+    let data = await userService.getAllCodeService(req.query.type);
+    console.log(data)
+    return res.status(200).json(data);
 
-        let data = await userService.getAllCodeService(req.query.type);
-        console.log(data)
-        return res.status(200).json(data);
     } catch (e) {
         console.log('get all code: ', e)
         return res.status(200).json({
             errCode: -1,
-            errMessage: 'error from server'
+            errMessage: 'error from server AAA'
         })
     }
 }

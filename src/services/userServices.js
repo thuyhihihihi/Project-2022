@@ -64,17 +64,15 @@ let getAllUser = (userId) => {
             let user = '';
             if (userId === 'ALL') {
                 user = await db.User.findAll({
-                    attributes: {
-                        exclude: ['password']//khong hien thi password
-                    }
+                  
                 })
             }
             if (userId && userId !== 'ALL') {
                 user = await db.User.findOne({
                     where: { id: userId },
-                    attributes: {
-                        exclude: ['password']//khong hien thi password
-                    }
+                    // attributes: {
+                    //     exclude: ['password']//khong hien thi password
+                    // }
                 })
             }
             resolve(user)
@@ -121,6 +119,8 @@ let createNewUser = (data) => {
                     phonenumber: data.phonenumber,
                     address: data.address,
                     roleId: data.roleId,
+                    positionId: data.positionId,
+                    image: data.image
                 })
                 resolve({
                     errCode: 0,
@@ -209,7 +209,7 @@ let getAllCodeService = (typeInput) => {
                 })
             } else {
                 let res = {};
-                let allCode = await db.Codes.findAll({
+                let allCode = await db.codes.findAll({
                     where: { type: typeInput }// tim tat ca va loc theo dieu kien where
                 });
                 res.errCode = 0;
@@ -223,6 +223,8 @@ let getAllCodeService = (typeInput) => {
         }
     })
 }
+
+
 module.exports = {
     handleLogin: handleLogin,
     getAllUser: getAllUser,
