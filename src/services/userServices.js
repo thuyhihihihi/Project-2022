@@ -35,7 +35,7 @@ let handleLogin = (email, password) => {
                     if (check) {
                         userData.errCode = 0;
                         userData.errMessage = 'ok';
-                        //console.log(user)
+                        console.log(user)
                         delete user.password;
                         userData.user = user;
                     } else {
@@ -49,7 +49,7 @@ let handleLogin = (email, password) => {
             } else {
                 //return error
                 userData.errCode = 1;
-                userData.errMessage = `your email isn't exist in your system. Try other email!`;
+                userData.errMessage = `Account not valid!`;
             }
             resolve(userData)
         } catch (e) {
