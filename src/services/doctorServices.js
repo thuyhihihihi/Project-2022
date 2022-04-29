@@ -58,18 +58,24 @@ let getAllDoctor = () => {
 let saveDetailInforDoctor = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.contentHTML || !data.contentMarkdown
-                || !data.doctorId) {
+            // selectedPrice: this.state.selectedPrice.value,
+            // selectedPayment: this.state.selectedPayment.value,
+            // selectedProvince: this.state.selectedProvince.value,
+            // nameClinic: this.state.nameClinic,
+            // addressClinic:this.state.addressClinic,
+            // linkMap: this.state.linkMap,
+            // note: this.state.note,
+
+            if (!data.doctorId || !data.contentHTML || !data.contentMarkdown
+                || !data.doctorId || !data.action || !data.selectedPrice
+                || !data.selectedPayment || !data.selectedProvince || !data.nameClinic
+                || !data.addressClinic || !data.linkMap
+            ) {
                 resolve({
                     errCode: -1,
-                    errMessage: 'Missing parameter 55'
+                    errMessage: 'Missing parameter '
                 })
             } else {
-                // await db.Markdowns.create({
-                //     contentHTML: data.contentHTML,
-                //     contentMarkdown: data.contentMarkdown,
-                //     description: data.description,
-                //     doctorId: data.doctorId
                 if (data.action === 'ADD') {
                     await db.Markdowns.create({
                         contentHTML: data.contentHTML,
@@ -87,12 +93,46 @@ let saveDetailInforDoctor = (data) => {
                         doctorMarkdown.contentHTML = data.contentHTML;
                         doctorMarkdown.contentMarkdown = data.contentMarkdown;
                         doctorMarkdown.description = data.description;
+                        doctorMarkdown.updateAt = new Date();
                         await doctorMarkdown.save()
                     }
                 }
+
+                let doctorInfor = await db.Doctor_Infor.findOne({
+                    where: {
+                        doctorId: data.doctorId,
+                    },
+                    raw: false
+                })
+                if (doctorInfor) {//neu tim ra doctorInfor thi la update
+                    doctorInfor.doctorId = data.doctorId;
+                    doctorInfor.priceId = data.selectedPrice;
+                    doctorInfor.provinceId = data.selectedProvince;
+                    doctorInfor.paymentId = data.selectedPayment;
+
+                    doctorInfor.nameClinic = data.nameClinic;
+                    doctorInfor.addressClinic = data.addressClinic;
+                    doctorInfor.linkMap = data.linkMap;
+                    doctorInfor.note = data.note;
+                    await doctorInfor.save()
+
+                } else {
+                    //create
+                    await db.Doctor_Infor.create({
+                        doctorId: data.doctorId,
+                        priceId: data.selectedPrice,
+                        provinceId: data.selectedProvince,
+                        paymentId: data.selectedPayment,
+
+                        nameClinic: data.nameClinic,
+                        addressClinic: data.addressClinic,
+                        linkMap: data.linkMap,
+                        note: data.note,
+                    })
+                }
                 resolve({
                     errCode: 0,
-                    errMessage: 'save ok'
+                    errMessage: 'save infor doctor ok'
                 })
             }
         } catch (e) {
@@ -124,13 +164,22 @@ let getInforDoctor = (inputData) => {
                         },
 
                         { model: db.codes, as: 'positionData', attributes: ['valueENG', 'valueVI'] },
-
+                        {
+                            model: db.Doctor_Infor,
+                            attributes: {
+                                exclude: ['id', 'doctorId'],
+                            },
+                            include: [
+                                { model: db.codes, as: 'priceType', attributes: ['valueENG', 'valueVI'] },
+                                { model: db.codes, as: 'provinceType', attributes: ['valueENG', 'valueVI'] },
+                                { model: db.codes, as: 'paymentType', attributes: ['valueENG', 'valueVI'] },
+                                //{ model: db.codes, as: 'priceType', attributes: ['valueENG', 'valueVI'] },
+                            ]
+                        },
                     ],
                     raw: false,
                     nest: true
                 })
-
-
                 if (data && data.image) {
                     data.image = new Buffer(data.image, 'base64').toString('binary');
                 }
@@ -170,13 +219,6 @@ let bulkCreateSchedule = (data) => {
                         raw: true
                     }
                 );
-                //convert date
-                // if (existing && existing.length > 0) {
-                //     existing = existing.map(item => {
-                //         item.date = new Date(item.date).getTime();
-                //         return item;
-                //     })
-                // }
 
                 //compare difference
                 let toCreate = _.differenceWith(schedule, existing, (a, b) => {
@@ -211,7 +253,13 @@ let getSchedulebyDate = (doctorId, date) => {
                     where: {
                         doctorId: doctorId,
                         date: date
-                    }
+                    },
+                    include: [//ý nghĩa: sẽ lấy thông tin user kèm theo thông tin của nó tồn tại trong bảng markdown
+                        { model: db.codes, as: 'timeTypeData', attributes: ['valueENG', 'valueVI'] },
+
+                    ],
+                    raw: false,
+                    nest: true
                 })
                 if (!dataSchedule) dataSchedule = [];
                 resolve({
@@ -224,6 +272,101 @@ let getSchedulebyDate = (doctorId, date) => {
         }
     })
 }
+
+
+let getExtraInforDoctorById = (doctorId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!doctorId) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'missing required param '
+                })
+            } else {
+                let data = await db.Doctor_Infor.findOne({
+                    where: {
+                        doctorId: doctorId
+                    },
+                    attributes: {
+                        exclude: ['id', 'doctorId'],
+                    },
+                    include: [
+                        { model: db.codes, as: 'priceType', attributes: ['valueENG', 'valueVI'] },
+                        { model: db.codes, as: 'provinceType', attributes: ['valueENG', 'valueVI'] },
+                        { model: db.codes, as: 'paymentType', attributes: ['valueENG', 'valueVI'] },
+                        //{ model: db.codes, as: 'priceType', attributes: ['valueENG', 'valueVI'] },
+                    ],
+                    raw: false,
+                    nest: true
+                })
+                if (!data) data = {};
+                resolve({
+                    errCode: 0,
+                    data: data
+                })
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
+let getProfileDoctorById = (inputId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!inputId) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'missing required parameter!'
+                })
+            } else {
+                let data = await db.User.findOne({
+                    where: {//tim 1 user voi dieu kien where
+                        id: inputId
+                    },
+                    attributes: {
+                        exclude: ['password', 'roleId']//khong hien thi 
+                    },
+                    include: [//ý nghĩa: sẽ lấy thông tin user kèm theo thông tin của nó tồn tại trong bảng markdown
+                        {
+                            model: db.Markdowns,
+                            attributes: ['description', 'contentHTML',
+                                'contentMarkdown'],
+                        },
+
+                        { model: db.codes, as: 'positionData', attributes: ['valueENG', 'valueVI'] },
+                        {
+                            model: db.Doctor_Infor,
+                            attributes: {
+                                exclude: ['id', 'doctorId'],
+                            },
+                            include: [
+                                { model: db.codes, as: 'priceType', attributes: ['valueENG', 'valueVI'] },
+                                { model: db.codes, as: 'provinceType', attributes: ['valueENG', 'valueVI'] },
+                                { model: db.codes, as: 'paymentType', attributes: ['valueENG', 'valueVI'] },
+                               
+                            ]
+                        },
+                    ],
+                    raw: false,
+                    nest: true
+                })
+                if (data && data.image) {
+                    data.image = new Buffer(data.image, 'base64').toString('binary');
+                }
+                if (!data) data = {};
+
+                resolve({
+                    errCode: 0,
+                    data: data
+                })
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+
+}
 module.exports = {
     getLoadDoctorHome: getLoadDoctorHome,
     getAllDoctor: getAllDoctor,
@@ -231,5 +374,8 @@ module.exports = {
     saveDetailInforDoctor: saveDetailInforDoctor,
     getInforDoctor: getInforDoctor,
     bulkCreateSchedule: bulkCreateSchedule,
-    getSchedulebyDate: getSchedulebyDate
+    getSchedulebyDate: getSchedulebyDate,
+    getExtraInforDoctorById: getExtraInforDoctorById,
+    getProfileDoctorById: getProfileDoctorById
 }
+
